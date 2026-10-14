@@ -1,0 +1,24 @@
+{
+  "name": "singclash",
+  "version": "1.0.0",
+  "description": "Middleware that fetches a sing-box JSON subscription and serves it as a Clash.Meta (Mihomo) YAML profile, merged with manual nodes.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch-path=./server.js --watch-path=./src server.js",
+    "start": "node server.js",
+    "build:css": "tailwindcss -c tailwind.config.cjs -i src/panel.css -o public/styles.css --minify",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18.11"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.22.3",
+    "js-yaml": "^4.3.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

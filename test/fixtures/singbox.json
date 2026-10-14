@@ -1,0 +1,43 @@
+{
+  "log": { "level": "warn" },
+  "outbounds": [
+    { "type": "selector", "tag": "proxy", "outbounds": ["auto", "🇩🇪 DE-Reality"] },
+    { "type": "urltest", "tag": "auto", "outbounds": ["🇩🇪 DE-Reality"] },
+    { "type": "vless", "tag": "🇩🇪 DE-Reality", "server": "de.example.com", "server_port": 443,
+      "uuid": "11111111-2222-3333-4444-555555555555", "flow": "xtls-rprx-vision", "packet_encoding": "xudp",
+      "tls": { "enabled": true, "server_name": "www.microsoft.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": { "enabled": true, "public_key": "YYcQQgSaleSONt6Aq2QgCyA0q6ZJam5lNylqvaqEF_o", "short_id": "abcd" } } },
+    { "type": "vmess", "tag": "NL-WS", "server": "nl.example.com", "server_port": 443,
+      "uuid": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "security": "auto", "alter_id": 0,
+      "tls": { "enabled": true, "server_name": "nl.example.com", "insecure": true, "alpn": ["http/1.1"] },
+      "transport": { "type": "ws", "path": "/ws", "headers": { "Host": "cdn.example.com" }, "max_early_data": 2048, "early_data_header_name": "Sec-WebSocket-Protocol" } },
+    { "type": "trojan", "tag": "FR-gRPC", "server": "fr.example.com", "server_port": 443, "password": "pw",
+      "tls": { "enabled": true, "server_name": "fr.example.com" },
+      "transport": { "type": "grpc", "service_name": "grpcsvc" } },
+    { "type": "vless", "tag": "US-HTTPUpgrade", "server": "us.example.com", "server_port": 80,
+      "uuid": "11111111-2222-3333-4444-555555555555",
+      "transport": { "type": "httpupgrade", "host": "us.example.com", "path": "/up" } },
+    { "type": "shadowsocks", "tag": "SS", "server": "1.2.3.4", "server_port": 8388, "method": "2022-blake3-aes-128-gcm", "password": "5vV24Kjde73vY4dH5KlK+A==",
+      "multiplex": { "enabled": true, "protocol": "h2mux", "max_connections": 4 } },
+    { "type": "shadowsocks", "tag": "SS-STLS", "method": "aes-128-gcm", "password": "sspw", "detour": "stls-out" },
+    { "type": "shadowtls", "tag": "stls-out", "server": "5.6.7.8", "server_port": 443, "version": 3, "password": "stlspw",
+      "tls": { "enabled": true, "server_name": "www.apple.com", "utls": { "enabled": true, "fingerprint": "chrome" } } },
+    { "type": "hysteria2", "tag": "HY2", "server": "hy.example.com", "server_port": 443, "password": "hypw",
+      "server_ports": ["20000:30000"], "hop_interval": "30s", "up_mbps": 50, "down_mbps": 200,
+      "obfs": { "type": "salamander", "password": "obfspw" },
+      "tls": { "enabled": true, "server_name": "hy.example.com", "alpn": ["h3"] } },
+    { "type": "tuic", "tag": "TUIC", "server": "tuic.example.com", "server_port": 443, "uuid": "u", "password": "p",
+      "congestion_control": "bbr", "udp_relay_mode": "native", "zero_rtt_handshake": true, "heartbeat": "10s",
+      "tls": { "enabled": true, "server_name": "tuic.example.com", "alpn": ["h3"] } },
+    { "type": "anytls", "tag": "ANY", "server": "any.example.com", "server_port": 443, "password": "anypw",
+      "tls": { "enabled": true, "server_name": "any.example.com" } },
+    { "type": "direct", "tag": "direct" },
+    { "type": "block", "tag": "block" },
+    { "type": "dns", "tag": "dns-out" }
+  ],
+  "endpoints": [
+    { "type": "wireguard", "tag": "WG", "address": ["172.16.0.2/32", "fd01::2/128"], "private_key": "+A3O+XglE2z+SUaQyA1VktCa1Y7CgyZbrx9V6mgbTpc=", "mtu": 1280,
+      "peers": [{ "address": "wg.example.com", "port": 2408, "public_key": "UfTdMqjCsSQzUlEnDBOkZxoJhbzZnU9H+mVkf7Wsmqs=", "reserved": [1, 2, 3], "allowed_ips": ["0.0.0.0/0", "::/0"] }] }
+  ]
+}

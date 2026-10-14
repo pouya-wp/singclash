@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SingClash Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="min-h-screen font-sans text-slate-200 antialiased">
+  <div class="mx-auto max-w-4xl px-4 pb-32 pt-10 sm:pt-14">
+    <header class="mb-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-lg font-bold text-white shadow-lg shadow-indigo-500/30">S</div>
+        <div>
+          <h1 class="text-xl font-bold text-white">SingClash</h1>
+          <p class="text-sm text-slate-400">تبدیل سابسکریپشن sing-box به Clash.Meta (Mihomo)</p>
+        </div>
+      </div>
+      <span id="status" class="hidden rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300 sm:inline">ذخیره‌شده</span>
+    </header>
+
+    <main class="space-y-6">
+      <!-- Output link -->
+      <section class="card border-indigo-400/20 bg-indigo-500/[.06]">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="font-bold text-white">لینک خروجی برای FlClash</h2>
+          <button id="regen" class="text-xs text-slate-400 underline-offset-4 hover:text-rose-300 hover:underline">ساخت توکن جدید</button>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <input id="subLink" class="input font-mono text-indigo-200" dir="ltr" readonly />
+          <button id="copyLink" class="btn-primary shrink-0 sm:w-28">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>کپی</span>
+          </button>
+        </div>
+        <p class="hint">این لینک ثابت است و با تغییر تنظیمات عوض نمی‌شود. در FlClash از مسیر «پروفایل‌ها ← افزودن ← URL» اضافه کنید. با «ساخت توکن جدید» لینک قبلی باطل می‌شود.</p>
+      </section>
+
+      <!-- Subscription -->
+      <section class="card">
+        <h2 class="mb-5 font-bold text-white">۱. سابسکریپشن اصلی</h2>
+        <div class="space-y-5">
+          <div>
+            <label class="label" for="subscriptionUrl">لینک سابسکریپشن</label>
+            <input id="subscriptionUrl" class="input font-mono" dir="ltr" placeholder="https://panel.example.com/sub/xxxxxxxx" />
+          </div>
+          <div>
+            <label class="label" for="userAgent">هدر User-Agent</label>
+            <input id="userAgent" class="input font-mono" dir="ltr" placeholder="sing-box" />
+            <div class="mt-2 flex flex-wrap gap-1.5" dir="ltr">
+              <span class="chip" data-ua="sing-box">sing-box</span>
+              <span class="chip" data-ua="sing-box/1.12.0">sing-box/1.12.0</span>
+              <span class="chip" data-ua="SFA/1.12.0 (sing-box 1.12.0)">SFA</span>
+              <span class="chip" data-ua="SFI/1.12.0 (sing-box 1.12.0)">SFI</span>
+              <span class="chip" data-ua="Hiddify/2.5.7">Hiddify</span>
+            </div>
+            <p class="hint">پنل سابسکریپشن بر اساس این هدر تشخیص می‌دهد که کانفیگ کامل JSON ساین‌باکس برگرداند.</p>
+          </div>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label class="label" for="profileName">نام پروفایل در کلاینت</label>
+              <input id="profileName" class="input" dir="auto" />
+            </div>
+            <div>
+              <label class="label" for="updateInterval">بازه‌ی به‌روزرسانی خودکار (ساعت)</label>
+              <input id="updateInterval" type="number" min="1" max="168" class="input" dir="ltr" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Manual configs -->
+      <section class="card">
+        <h2 class="mb-1 font-bold text-white">۲. کانفیگ‌های دستی</h2>
+        <p class="mb-4 text-sm text-slate-400">این نودها با پروکسی‌های سابسکریپشن ادغام می‌شوند و داخل گروه url-test قرار می‌گیرند.</p>
+        <textarea id="manualConfigs" rows="12" dir="ltr" spellcheck="false" class="input resize-y font-mono text-[13px] leading-6"
+          placeholder="vless://uuid@host:443?security=reality&sni=...&pbk=...#My-VLESS
+ss://YWVzLTEyOC1nY206cGFzcw@1.2.3.4:8388#My-SS
+Home Snell = snell, 1.2.3.4, 443, psk=secret, version=4, obfs=http, obfs-host=bing.com
+
+- name: my-trojan
+  type: trojan
+  server: example.com
+  port: 443
+  password: secret"></textarea>
+        <details class="mt-3 text-xs leading-6 text-slate-500">
+          <summary class="cursor-pointer select-none text-slate-400 hover:text-slate-200">فرمت‌های پشتیبانی‌شده</summary>
+          <ul class="mt-2 list-inside list-disc space-y-1 pr-2">
+            <li>لینک‌های اشتراک‌گذاری: <code dir="ltr">vless:// vmess:// trojan:// ss:// hysteria2:// hy2:// hysteria:// tuic:// anytls:// socks://</code></li>
+            <li>خطوط سبک Surge (برای Snell و …): <code dir="ltr">Name = snell, server, port, psk=…, version=4</code></li>
+            <li>پروکسی‌های YAML کلش (لیست، تکی یا با کلید <code>proxies:</code>)</li>
+            <li>Outboundهای JSON ساین‌باکس (تکی، آرایه یا کانفیگ کامل)</li>
+            <li>همه‌ی این‌ها را می‌توانید در یک متن با هم ترکیب کنید؛ هر لینک/خط Surge در یک خط جدا.</li>
+          </ul>
+        </details>
+      </section>
+
+      <!-- Groups -->
+      <section class="card">
+        <h2 class="mb-5 font-bold text-white">۳. گروه‌ها و قوانین</h2>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label class="label" for="mainGroupName">نام گروه اصلی (select)</label>
+            <input id="mainGroupName" class="input" dir="auto" />
+          </div>
+          <div>
+            <label class="label" for="autoName">نام گروه تست خودکار (url-test)</label>
+            <input id="autoName" class="input" dir="auto" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="label" for="autoUrl">آدرس تست پینگ</label>
+            <input id="autoUrl" class="input font-mono" dir="ltr" />
+          </div>
+          <div>
+            <label class="label" for="autoInterval">فاصله‌ی تست (ثانیه)</label>
+            <input id="autoInterval" type="number" min="10" class="input" dir="ltr" />
+          </div>
+          <div>
+            <label class="label" for="autoTolerance">تلورانس (میلی‌ثانیه)</label>
+            <input id="autoTolerance" type="number" min="0" class="input" dir="ltr" />
+          </div>
+        </div>
+        <label class="mt-5 flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+          <span>
+            <span class="block text-sm font-medium text-slate-200">عبور مستقیم سایت‌ها و IPهای ایران</span>
+            <span class="block text-xs text-slate-500">قوانین <code dir="ltr">DOMAIN-SUFFIX,ir</code> و <code dir="ltr">GEOIP,IR</code> به DIRECT</span>
+          </span>
+          <input id="bypassIran" type="checkbox" class="peer sr-only" />
+          <span class="relative h-6 w-11 shrink-0 rounded-full bg-white/10 transition after:absolute after:right-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition peer-checked:bg-indigo-500 peer-checked:after:-translate-x-5"></span>
+        </label>
+      </section>
+
+      <!-- Preview -->
+      <section id="previewCard" class="card hidden">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-bold text-white">پیش‌نمایش خروجی</h2>
+          <button id="copyYaml" class="btn-ghost px-3 py-1.5 text-xs">کپی YAML</button>
+        </div>
+        <div id="stats" class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4"></div>
+        <ul id="errors" class="mb-4 hidden space-y-1 rounded-xl border border-amber-400/20 bg-amber-400/5 p-3 text-xs leading-6 text-amber-200"></ul>
+        <pre id="yaml" dir="ltr" class="max-h-[32rem] overflow-auto rounded-xl border border-white/10 bg-black/40 p-4 font-mono text-xs leading-5 text-slate-300"></pre>
+      </section>
+    </main>
+  </div>
+
+  <!-- Action bar -->
+  <div class="fixed inset-x-0 bottom-0 border-t border-white/10 bg-[#0b0d12]/80 backdrop-blur">
+    <div class="mx-auto flex max-w-4xl items-center justify-end gap-2 px-4 py-3">
+      <button id="preview" class="btn-ghost">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        پیش‌نمایش
+      </button>
+      <button id="save" class="btn-primary min-w-28">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+        ذخیره
+      </button>
+    </div>
+  </div>
+
+  <div id="toast" class="pointer-events-none fixed left-1/2 top-6 z-50 -translate-x-1/2 translate-y-[-150%] rounded-xl border border-white/10 bg-slate-900/95 px-4 py-2.5 text-sm text-white opacity-0 shadow-2xl transition duration-300"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
