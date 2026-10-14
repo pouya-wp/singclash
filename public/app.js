@@ -117,10 +117,21 @@ function renderPreview({ yaml, stats }) {
   $('stats').innerHTML = items
     .map(([k, v]) => `<div class="stat"><div class="text-[11px] text-slate-500">${k}</div><div class="mt-0.5 font-bold text-white">${v}</div></div>`)
     .join('');
-  const notes = [...stats.errors, ...stats.skipped.map((s) => `رد شد (نوع پشتیبانی‌نشده): ${s}`)];
+  const notes = [...stats.errors, ...stats.skipped.map((s) => `رد شد: ${s}`)];
   const ul = $('errors');
   ul.classList.toggle('hidden', !notes.length);
   ul.replaceChildren(...notes.map((n) => Object.assign(document.createElement('li'), { textContent: '• ' + n })));
+  // Raw sample of a dropped outbound (secrets masked) — handy for reporting a new format.
+  if (stats.samples?.length) {
+    const li = document.createElement('li');
+    li.className = 'pt-2';
+    li.append('نمونه‌ی outbound ردشده (رمزها مخفی شده‌اند):');
+    const pre = Object.assign(document.createElement('pre'), { textContent: JSON.stringify(stats.samples, null, 2) });
+    pre.dir = 'ltr';
+    pre.className = 'mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg bg-black/30 p-2 font-mono text-[11px] text-slate-300';
+    li.append(pre);
+    ul.append(li);
+  }
   $('previewCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
