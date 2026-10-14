@@ -127,6 +127,12 @@ function serverPorts(ports) {
   return toArray(ports).map((p) => String(p).replace(':', '-')).join(',');
 }
 
+// With port hopping sing-box may omit server_port; Mihomo still wants a base port.
+function firstPort(ports) {
+  const first = toArray(ports)[0];
+  return first === undefined ? undefined : Number(String(first).split(/[:-]/)[0]) || undefined;
+}
+
 function parsePluginOpts(str) {
   const out = {};
   for (const part of String(str || '').split(';')) {
@@ -250,6 +256,7 @@ export function convertOutbound(ob, byTag = new Map()) {
         up: ob.up_mbps ? `${ob.up_mbps} Mbps` : ob.up,
         down: ob.down_mbps ? `${ob.down_mbps} Mbps` : ob.down,
         ports: ob.server_ports ? serverPorts(ob.server_ports) : undefined,
+        port: ob.server_port ?? firstPort(ob.server_ports),
         'recv-window-conn': ob.recv_window_conn,
         'recv-window': ob.recv_window,
         'disable-mtu-discovery': ob.disable_mtu_discovery || undefined,
@@ -264,6 +271,7 @@ export function convertOutbound(ob, byTag = new Map()) {
         up: ob.up_mbps ? `${ob.up_mbps} Mbps` : undefined,
         down: ob.down_mbps ? `${ob.down_mbps} Mbps` : undefined,
         ports: ob.server_ports ? serverPorts(ob.server_ports) : undefined,
+        port: ob.server_port ?? firstPort(ob.server_ports),
         'hop-interval': ob.hop_interval ? Math.round(durationToMs(ob.hop_interval) / 1000) : undefined,
       };
       if (ob.obfs?.type) {
@@ -333,7 +341,8 @@ export function convertOutbound(ob, byTag = new Map()) {
 
 /**
  * Converts a full sing-box config (or a bare array of outbounds) to Mihomo proxies.
- * Returns { proxies, skipped } where skipped lists tags of unsupported outbounds.
+ * Returns { proxies, skipped, samples } — skipped holds a readable reason per dropped outbound,
+ * samples a few of the dropped outbounds with secrets masked (for diagnosing new formats).
  */
 export function convertSingbox(config) {
   const outbounds = Array.isArray(config)
@@ -342,14 +351,28 @@ export function convertSingbox(config) {
   const byTag = new Map(outbounds.filter((o) => o?.tag).map((o) => [o.tag, o]));
   const proxies = [];
   const skipped = [];
+  const samples = [];
   for (const ob of outbounds) {
     if (!ob || SKIP_TYPES.has(ob.type)) continue;
     const p = convertOutbound(ob, byTag);
-    if (p && p.server && p.port) proxies.push(p);
-    else skipped.push(ob.tag || ob.type);
+    if (p && p.server && p.port) {
+      proxies.push(p);
+      continue;
+    }
+    const why = !p ? `نوع «${ob.type}» پشتیبانی نمی‌شود` : `فیلد ${p.server ? 'server_port' : 'server'} ندارد`;
+    skipped.push(`${ob.tag ?? '?'} — ${why}`);
+    if (samples.length < 2) samples.push(maskSecrets(ob));
   }
   // Drop dialer-proxy references to things that aren't proxies anymore.
   const names = new Set(proxies.map((p) => p.name));
   for (const p of proxies) if (p['dialer-proxy'] && !names.has(p['dialer-proxy'])) delete p['dialer-proxy'];
-  return { proxies, skipped };
+  return { proxies, skipped, samples };
+}
+
+const SECRET_KEYS = /^(uuid|password|private_key|pre_shared_key|psk|auth|auth_str|public_key|short_id|token)$/;
+
+function maskSecrets(value) {
+  if (Array.isArray(value)) return value.map(maskSecrets);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, SECRET_KEYS.test(k) && typeof v === 'string' ? '***' : maskSecrets(v)]));
 }

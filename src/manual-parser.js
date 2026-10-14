@@ -451,7 +451,7 @@ export function parseManual(text) {
     if (doc && typeof doc === 'object') {
       const r = proxiesFromStructured(doc);
       if (r.proxies.length) {
-        for (const s of r.skipped) errors.push(`نوع پشتیبانی‌نشده: ${s}`);
+        for (const s of r.skipped) errors.push(`رد شد: ${s}`);
         return { proxies: r.proxies, errors };
       }
     }
@@ -492,7 +492,7 @@ export function parseManual(text) {
     try {
       const r = proxiesFromStructured(yaml.load(rest));
       proxies.push(...r.proxies);
-      for (const s of r.skipped) errors.push(`نوع پشتیبانی‌نشده: ${s}`);
+      for (const s of r.skipped) errors.push(`رد شد: ${s}`);
       if (!r.proxies.length && !r.skipped.length) errors.push('بخشی از متن به‌عنوان پروکسی شناسایی نشد');
     } catch (e) {
       errors.push(`خطای YAML/JSON: ${e.reason || e.message}`);

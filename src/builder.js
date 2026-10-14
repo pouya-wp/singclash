@@ -57,7 +57,7 @@ export function parseSubscriptionBody(body) {
     try {
       proxies.push(parseUri(line));
     } catch {
-      skipped.push(line.slice(0, 40));
+      skipped.push(`${line.slice(0, 40)} — لینک قابل تشخیص نبود`);
     }
   }
   if (!proxies.length) throw new Error('محتوای سابسکریپشن قابل تشخیص نبود (نه JSON ساین‌باکس، نه YAML کلش، نه لیست لینک)');
@@ -149,7 +149,7 @@ export function buildProfile(cfg, proxies) {
  * along with stats for the panel. Throws only if there is nothing at all to serve.
  */
 export async function generate(cfg) {
-  const stats = { format: null, subscription: 0, manual: 0, skipped: [], errors: [], userinfo: null };
+  const stats = { format: null, subscription: 0, manual: 0, skipped: [], samples: [], errors: [], userinfo: null };
   let subProxies = [];
   if (cfg.subscriptionUrl) {
     try {
@@ -158,6 +158,7 @@ export async function generate(cfg) {
       subProxies = parsed.proxies;
       stats.format = parsed.format;
       stats.skipped.push(...parsed.skipped);
+      stats.samples.push(...(parsed.samples || []));
       stats.userinfo = fetched.userinfo;
     } catch (e) {
       const reason = e.name === 'TimeoutError' ? 'مهلت اتصال به سرور سابسکریپشن تمام شد' : e.message;

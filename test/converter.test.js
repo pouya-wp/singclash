@@ -127,3 +127,17 @@ test('empty profile still produces a valid url-test group', () => {
   const doc = buildProfile(defaults(), []);
   assert.deepEqual(doc['proxy-groups'][1].proxies, ['DIRECT']);
 });
+
+test('hysteria2 with only server_ports gets a base port', () => {
+  const { proxies } = convertSingbox([{ type: 'hysteria2', tag: 'hop', server: 'h.com', server_ports: ['20000:30000'], password: 'p' }]);
+  assert.equal(proxies[0].port, 20000);
+  assert.equal(proxies[0].ports, '20000-30000');
+});
+
+test('dropped outbounds report type/reason and a masked sample', () => {
+  const r = convertSingbox([{ type: 'naive', tag: 'N', server: 'n.com', server_port: 443, password: 'secret' }, { type: 'vless', tag: 'V', uuid: 'u' }]);
+  assert.equal(r.proxies.length, 0);
+  assert.match(r.skipped[0], /naive/);
+  assert.match(r.skipped[1], /server/);
+  assert.equal(r.samples[0].password, '***');
+});
