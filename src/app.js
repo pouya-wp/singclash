@@ -34,6 +34,7 @@ async function serveSub(req, res) {
   // If the upstream failed and there's nothing else, answer with an error so the client
   // keeps its previously downloaded profile instead of replacing it with an empty one.
   if (stats.subscriptionFailed && stats.total === 0) {
+    console.error('[sub] upstream failed and nothing to serve:', stats.errors.join(' | '));
     return res.status(502).type('text/plain').send(stats.errors.join('\n'));
   }
   res.set({

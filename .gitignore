@@ -4,3 +4,4 @@ config.json
 config.json.tmp
 .vercel
 .env*
+.sub-cache.json

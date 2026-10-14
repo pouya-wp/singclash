@@ -1,4 +1,6 @@
 import yaml from 'js-yaml';
+import crypto from 'node:crypto';
+import { readSubCache, writeSubCache } from './config-store.js';
 import { convertSingbox } from './singbox-to-clash.js';
 import { parseManual, parseUri, proxiesFromStructured } from './manual-parser.js';
 
@@ -157,18 +159,38 @@ export async function generate(cfg) {
   const stats = { format: null, subscription: 0, manual: 0, skipped: [], samples: [], errors: [], userinfo: null };
   let subProxies = [];
   if (cfg.subscriptionUrl) {
+    const cache = await readSubCache();
+    const usable = cache?.url === cfg.subscriptionUrl ? cache : null;
+    let fetched = null;
+    let parsed = null;
     try {
-      const fetched = await fetchSubscription(cfg.subscriptionUrl, cfg.userAgent);
-      const parsed = parseSubscriptionBody(fetched.body);
+      fetched = await fetchSubscription(cfg.subscriptionUrl, cfg.userAgent);
+      parsed = parseSubscriptionBody(fetched.body);
+      const hash = crypto.createHash('sha256').update(fetched.body).digest('hex');
+      if (usable?.hash !== hash || usable?.userinfo !== fetched.userinfo) {
+        await writeSubCache({ url: cfg.subscriptionUrl, hash, body: fetched.body, userinfo: fetched.userinfo, at: Date.now() });
+      }
+    } catch (e) {
+      const code = e.cause?.code || e.cause?.message;
+      const reason = e.name === 'TimeoutError' ? 'مهلت اتصال به سرور سابسکریپشن تمام شد' : code ? `${e.message} (${code})` : e.message;
+      if (usable) {
+        // Serve the last good copy instead of failing the client's update.
+        fetched = usable;
+        parsed = parseSubscriptionBody(usable.body);
+        const age = new Date(usable.at).toISOString().replace('T', ' ').slice(0, 16);
+        stats.errors.push(`سابسکریپشن: ${reason} — نسخه‌ی ذخیره‌شده‌ی ${age} (UTC) استفاده شد`);
+        stats.fromCache = true;
+      } else {
+        stats.errors.push(`سابسکریپشن: ${reason}`);
+        stats.subscriptionFailed = true;
+      }
+    }
+    if (parsed) {
       subProxies = parsed.proxies;
       stats.format = parsed.format;
       stats.skipped.push(...parsed.skipped);
       stats.samples.push(...(parsed.samples || []));
       stats.userinfo = fetched.userinfo;
-    } catch (e) {
-      const reason = e.name === 'TimeoutError' ? 'مهلت اتصال به سرور سابسکریپشن تمام شد' : e.message;
-      stats.errors.push(`سابسکریپشن: ${reason}`);
-      stats.subscriptionFailed = true;
     }
   }
   const manual = parseManual(cfg.manualConfigs);
