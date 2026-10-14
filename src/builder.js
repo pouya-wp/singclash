@@ -82,7 +82,8 @@ function uniqueNames(proxies) {
 function normalize(proxies, warnings) {
   const downgraded = new Set();
   for (const p of proxies) {
-    // Mihomo only implements Snell v1-v3; v4/v5 servers stay compatible with v3 clients.
+    // Mihomo only implements Snell v1-v3. Downgrading keeps the profile loadable; whether the
+    // server still accepts a v3 client depends on the server.
     if (p.type === 'snell' && Number(p.version) > 3) {
       downgraded.add(p.version);
       p.version = 3;
@@ -90,7 +91,7 @@ function normalize(proxies, warnings) {
     }
   }
   if (downgraded.size) {
-    warnings.push(`Snell v${[...downgraded].join('/v')} در Mihomo پشتیبانی نمی‌شود؛ این نودها با v3 متصل می‌شوند (سرورهای v4/v5 با کلاینت v3 سازگارند)`);
+    warnings.push(`Snell v${[...downgraded].join('/v')} در Mihomo پشتیبانی نمی‌شود؛ این نودها با v3 امتحان می‌شوند و اگر سرور فقط v4/v5 را قبول کند وصل نمی‌شوند`);
   }
   return proxies;
 }
