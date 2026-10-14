@@ -78,12 +78,17 @@ function uniqueNames(proxies) {
 
 // Mihomo-specific fixes for proxies that come from manual input or other clients' formats.
 function normalize(proxies, warnings) {
+  const downgraded = new Set();
   for (const p of proxies) {
     // Mihomo only implements Snell v1-v3; v4/v5 servers stay compatible with v3 clients.
     if (p.type === 'snell' && Number(p.version) > 3) {
-      warnings.push(`«${p.name}»: Snell v${p.version} در Mihomo پشتیبانی نمی‌شود؛ با v3 (سازگار با سرور v4/v5) متصل می‌شود`);
+      downgraded.add(p.version);
       p.version = 3;
+      p.udp ??= true;
     }
+  }
+  if (downgraded.size) {
+    warnings.push(`Snell v${[...downgraded].join('/v')} در Mihomo پشتیبانی نمی‌شود؛ این نودها با v3 متصل می‌شوند (سرورهای v4/v5 با کلاینت v3 سازگارند)`);
   }
   return proxies;
 }

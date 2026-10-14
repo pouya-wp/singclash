@@ -209,6 +209,24 @@ function convertWireguard(ob, base) {
   return p;
 }
 
+// Snell isn't in upstream sing-box; forks/providers that emit it don't agree on field names,
+// so accept the common spellings.
+function convertSnell(ob, base) {
+  const p = {
+    ...base,
+    type: 'snell',
+    psk: ob.psk ?? ob.password ?? ob.key,
+    version: ob.version !== undefined ? Number(ob.version) : undefined,
+    udp: ob.network !== 'tcp' && Number(ob.version || 0) >= 3 ? true : undefined,
+  };
+  const obfs = ob.obfs_opts || ob['obfs-opts'] || ob.obfs;
+  const mode = typeof obfs === 'string' ? obfs : obfs?.mode || obfs?.type;
+  if (mode && mode !== 'none') {
+    p['obfs-opts'] = { mode, host: obfs?.host || ob.obfs_host || ob['obfs-host'] };
+  }
+  return p;
+}
+
 export function convertOutbound(ob, byTag = new Map()) {
   if (!ob || typeof ob !== 'object' || SKIP_TYPES.has(ob.type)) return null;
   const base = { name: String(ob.tag ?? `${ob.type}-${ob.server}:${ob.server_port}`), server: ob.server, port: ob.server_port };
@@ -308,6 +326,9 @@ export function convertOutbound(ob, byTag = new Map()) {
       break;
     case 'wireguard':
       p = convertWireguard(ob, base);
+      break;
+    case 'snell':
+      p = convertSnell(ob, base);
       break;
     case 'ssh':
       p = {
