@@ -1,0 +1,20 @@
+/* Source for public/styles.css — rebuild with `npm run build:css` after changing classes. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: radial-gradient(1200px 600px at 100% -10%, rgba(99, 102, 241, 0.15), transparent), #0b0d12;
+}
+
+@layer components {
+  .card { @apply rounded-2xl border border-white/10 bg-white/[.03] p-5 shadow-xl shadow-black/20 backdrop-blur sm:p-6; }
+  .label { @apply mb-1.5 block text-sm font-medium text-slate-300; }
+  .hint { @apply mt-1.5 text-xs leading-6 text-slate-500; }
+  .input { @apply w-full rounded-xl border border-white/10 bg-black/30 px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 outline-none transition focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-500/20; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition active:scale-[.98] disabled:pointer-events-none disabled:opacity-50; }
+  .btn-primary { @apply btn bg-indigo-500 text-white hover:bg-indigo-400; }
+  .btn-ghost { @apply btn border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10; }
+  .chip { @apply cursor-pointer rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-xs text-slate-300 hover:border-indigo-400/50 hover:text-white; }
+  .stat { @apply rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-center; }
+}

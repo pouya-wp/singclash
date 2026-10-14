@@ -1,0 +1,6 @@
+node_modules/
+# Holds your subscription URL and access token — never commit it.
+config.json
+config.json.tmp
+.vercel
+.env*
