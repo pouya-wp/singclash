@@ -34,8 +34,20 @@ export function defaults() {
   };
 }
 
+const CACHE_PATH = path.join(path.dirname(CONFIG_PATH), '.sub-cache.json');
+
 const fileBackend = {
   name: 'file',
+  async readCache() {
+    try {
+      return JSON.parse(fs.readFileSync(CACHE_PATH, 'utf8'));
+    } catch {
+      return null;
+    }
+  },
+  async writeCache(value) {
+    fs.writeFileSync(CACHE_PATH, JSON.stringify(value));
+  },
   async read() {
     if (!fs.existsSync(CONFIG_PATH)) return null;
     try {
@@ -73,6 +85,13 @@ const redisBackend = {
   async write(cfg) {
     await redis(['SET', REDIS_KEY, JSON.stringify(cfg)]);
   },
+  async readCache() {
+    const raw = await redis(['GET', `${REDIS_KEY}:sub-cache`]);
+    return raw ? JSON.parse(raw) : null;
+  },
+  async writeCache(value) {
+    await redis(['SET', `${REDIS_KEY}:sub-cache`, JSON.stringify(value)]);
+  },
 };
 
 const backend = REDIS_URL && REDIS_TOKEN ? redisBackend : fileBackend;
@@ -105,6 +124,29 @@ export async function saveConfig(cfg) {
   await backend.write(cfg);
   cached = cfg;
   return cfg;
+}
+
+/**
+ * Last successful upstream response, used when the subscription server is unreachable.
+ * Failures here are logged and ignored: the cache is a fallback, never a reason to fail.
+ */
+export async function readSubCache() {
+  if (storageMissing()) return null;
+  try {
+    return await backend.readCache();
+  } catch (e) {
+    console.warn('[cache] read failed:', e.message);
+    return null;
+  }
+}
+
+export async function writeSubCache(value) {
+  if (storageMissing()) return;
+  try {
+    await backend.writeCache(value);
+  } catch (e) {
+    console.warn('[cache] write failed:', e.message);
+  }
 }
 
 const clampInt = (v, min, max, fallback) => {
