@@ -141,3 +141,14 @@ test('dropped outbounds report type/reason and a masked sample', () => {
   assert.match(r.skipped[1], /server/);
   assert.equal(r.samples[0].password, '***');
 });
+
+test('converts Snell outbounds emitted by sing-box forks', () => {
+  const { proxies, skipped } = convertSingbox([
+    { type: 'snell', tag: 'S1', server: 's.com', server_port: 443, psk: 'k', version: 4, obfs_opts: { mode: 'http', host: 'bing.com' } },
+    { type: 'snell', tag: 'S2', server: 's.com', server_port: 444, password: 'k', version: 2, obfs: 'tls', obfs_host: 'a.com' },
+  ]);
+  assert.deepEqual(skipped, []);
+  assert.deepEqual(proxies[0], { name: 'S1', server: 's.com', port: 443, type: 'snell', psk: 'k', version: 4, udp: true, 'obfs-opts': { mode: 'http', host: 'bing.com' } });
+  assert.deepEqual(proxies[1]['obfs-opts'], { mode: 'tls', host: 'a.com' });
+  assert.equal(proxies[1].psk, 'k');
+});
